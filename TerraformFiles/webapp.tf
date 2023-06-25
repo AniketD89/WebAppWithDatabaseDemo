@@ -16,7 +16,7 @@ resource "azurerm_linux_web_app" "example" {
   resource_group_name = data.azurerm_resource_group.example.name
   location            = azurerm_service_plan.example.location
   service_plan_id     = azurerm_service_plan.example.id
-  zip_deploy_file     = "C:\\Users\\bhagy\\Downloads\\WebApp.zip"
+  
 
   connection_string {
     name  = "Database"
