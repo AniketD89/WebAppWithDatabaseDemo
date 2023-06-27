@@ -19,7 +19,7 @@ stages:
           BuildConfiguration: Release
 
         steps:
-        
+        - checkout: none
         - task: DotNetCoreCLI@2
           displayName: Restore
           enabled: ${{parameters.runCompletePipeline}}
@@ -74,7 +74,7 @@ stages:
           vmImage: 'windows-2019'
 
         steps:
-        
+        - checkout: none
         - task: MSBuild@1
           displayName: 'Build solution WebApp.Database/WebApp.Database.sqlproj'
           enabled: ${{parameters.runCompletePipeline}}
@@ -95,7 +95,7 @@ stages:
         pool:
           vmImage: 'windows-2019'
         steps:
-         
+        - checkout: none
         - task: NuGetToolInstaller@1
           displayName: 'Use NuGet 6.6.1'
           enabled: ${{parameters.runCompletePipeline}}
@@ -135,7 +135,7 @@ stages:
         pool:
           vmImage: 'windows-2019'
         steps:
-        
+        - checkout: none
         - task: CopyFiles@2
           displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
           enabled: ${{parameters.runCompletePipeline}}
@@ -162,6 +162,20 @@ stages:
           vmImage: 'windows-2019'
 
         steps:
+        - checkout: none
+
+        - task: DownloadBuildArtifacts@1
+          inputs:
+            buildType: 'specific'
+            project: 'c3e77991-53e0-4a51-a181-ce6611863016'
+            pipeline: '13'
+            buildVersionToDownload: 'specific'
+            buildId: '62'
+            downloadType: 'single'
+            artifactName: 'Terraform'
+            downloadPath: '$(System.DefaultWorkingDirectory)'
+
+
         - task: TerraformInstaller@1
           displayName: 'Terraform Installation'
           inputs:
@@ -215,6 +229,19 @@ stages:
           vmImage: 'windows-2019'
 
         steps:
+        - checkout: none
+
+        - task: DownloadBuildArtifacts@1
+          inputs:
+            buildType: 'specific'
+            project: 'c3e77991-53e0-4a51-a181-ce6611863016'
+            pipeline: '13'
+            buildVersionToDownload: 'specific'
+            buildId: '62'
+            downloadType: 'single'
+            artifactName: 'WebApp'
+            downloadPath: '$(System.DefaultWorkingDirectory)'
+
         - task: FileTransform@1
           displayName: 'Modify Appsettings: SQL DB Connection'
           inputs:
@@ -229,6 +256,18 @@ stages:
           vmImage: 'windows-2019'
 
         steps:
+        - checkout: none
+
+        - task: DownloadBuildArtifacts@1
+          inputs:
+            buildType: 'specific'
+            project: 'c3e77991-53e0-4a51-a181-ce6611863016'
+            pipeline: '13'
+            buildVersionToDownload: 'specific'
+            buildId: '62'
+            downloadType: 'single'
+            artifactName: 'WebApp'
+            downloadPath: '$(System.DefaultWorkingDirectory)'
         - task: AzureRmWebAppDeployment@4
           displayName: 'Azure App Service Deploy: my-service-my-ado-demo-test'
           inputs:
@@ -245,6 +284,19 @@ stages:
           vmImage: 'windows-2019'
 
         steps:
+        - checkout: none
+
+        - task: DownloadBuildArtifacts@1
+          inputs:
+            buildType: 'specific'
+            project: 'c3e77991-53e0-4a51-a181-ce6611863016'
+            pipeline: '13'
+            buildVersionToDownload: 'specific'
+            buildId: '62'
+            downloadType: 'single'
+            artifactName: 'DB'
+            downloadPath: '$(System.DefaultWorkingDirectory)'
+
         - task: SqlAzureDacpacDeployment@1
           displayName: 'Azure SQL DacpacTask'
           inputs:
@@ -259,6 +311,18 @@ stages:
         pool:
           vmImage: 'windows-2019'
         steps:
+        - checkout: none
+
+        - task: DownloadBuildArtifacts@1
+          inputs:
+            buildType: 'specific'
+            project: 'c3e77991-53e0-4a51-a181-ce6611863016'
+            pipeline: '13'
+            buildVersionToDownload: 'specific'
+            buildId: '62'
+            downloadType: 'single'
+            artifactName: 'UI'
+            downloadPath: '$(System.DefaultWorkingDirectory)'
         - task: VSTest@2
           inputs:
             testSelector: 'testAssemblies'
@@ -281,17 +345,3 @@ stages:
             # Write your PowerShell commands here.
             
             Start-Sleep -Seconds 120
-
-      - job: 'Terraform_Destroy'
-        displayName: 'Destroy Created Resources'
-        dependsOn: Sleep
-        pool:
-          vmImage: 'windows-2019'
-        steps:
-        - task: TerraformTaskV4@4
-          inputs:
-            provider: 'azurerm'
-            command: 'destroy'
-            workingDirectory: '$(System.DefaultWorkingDirectory)/_Complete CI-CD Pipeline-ASP.NET Core-CI/Terraform'
-            commandOptions: '-var admin_password=$(admin_password)'
-            environmentServiceNameAzureRM: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
