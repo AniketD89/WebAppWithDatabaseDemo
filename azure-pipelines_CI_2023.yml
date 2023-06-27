@@ -19,7 +19,7 @@ stages:
           BuildConfiguration: Release
 
         steps:
-        - checkout: none
+        
         - task: DotNetCoreCLI@2
           displayName: Restore
           enabled: ${{parameters.runCompletePipeline}}
@@ -74,7 +74,7 @@ stages:
           vmImage: 'windows-2019'
 
         steps:
-        - checkout: none
+        
         - task: MSBuild@1
           displayName: 'Build solution WebApp.Database/WebApp.Database.sqlproj'
           enabled: ${{parameters.runCompletePipeline}}
@@ -95,7 +95,7 @@ stages:
         pool:
           vmImage: 'windows-2019'
         steps:
-        - checkout: 
+         
         - task: NuGetToolInstaller@1
           displayName: 'Use NuGet 6.6.1'
           enabled: ${{parameters.runCompletePipeline}}
@@ -135,7 +135,7 @@ stages:
         pool:
           vmImage: 'windows-2019'
         steps:
-        - checkout: none
+        
         - task: CopyFiles@2
           displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
           enabled: ${{parameters.runCompletePipeline}}
