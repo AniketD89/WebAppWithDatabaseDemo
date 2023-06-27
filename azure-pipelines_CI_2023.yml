@@ -149,7 +149,7 @@ stages:
 
   - stage: 'Test_Env_Stage'
     dependsOn:
-    - 'Build Stage'
+    - 'Build_Stage'
     displayName: 'Deployment to Test Env'
     jobs:
       - job: 'Terraform'
@@ -205,6 +205,7 @@ stages:
             environmentServiceNameAzureRM: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
 
       - job: 'Modify_Appsettings_File'
+        dependsOn: Terraform
         displayName: 'Modify appsettings.json'
         pool:
           vmImage: 'windows-2019'
@@ -218,6 +219,7 @@ stages:
             targetFiles: appsettings.json
 
       - job: 'App_Service_Deployment'
+        dependsOn: Modify_Appsettings_File
         displayName: 'Azure App Service Deploy: my-service-my-ado-demo-test'
         pool:
           vmImage: 'windows-2019'
@@ -233,6 +235,7 @@ stages:
             JSONFiles: '**/appsettings.json'
 
       - job: 'DB_Publish'
+        dependsOn: App_Service_Deployment
         displayName: 'Azure SQL DacpacTask'
         pool:
           vmImage: 'windows-2019'
@@ -248,6 +251,7 @@ stages:
 
       - job: 'Selenium'
         displayName: 'Run UI Tests'
+        dependsOn: DB_Publish
         pool:
           vmImage: 'windows-2019'
         steps:
@@ -267,6 +271,7 @@ stages:
         pool:
           vmImage: 'windows-2019'
         displayName: 'Sleep for 2mins'
+        dependsOn: Selenium
         steps:
         - powershell: |
             # Write your PowerShell commands here.
@@ -275,6 +280,7 @@ stages:
 
       - job: 'Terraform_Destroy'
         displayName: 'Destroy Created Resources'
+        dependsOn: Sleep
         pool:
           vmImage: 'windows-2019'
         steps:
