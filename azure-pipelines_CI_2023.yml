@@ -19,6 +19,7 @@ stages:
           BuildConfiguration: Release
 
         steps:
+        - checkout: none
         - task: DotNetCoreCLI@2
           displayName: Restore
           enabled: ${{parameters.runCompletePipeline}}
@@ -73,7 +74,7 @@ stages:
           vmImage: 'windows-2019'
 
         steps:
-
+        - checkout: none
         - task: MSBuild@1
           displayName: 'Build solution WebApp.Database/WebApp.Database.sqlproj'
           enabled: ${{parameters.runCompletePipeline}}
@@ -94,37 +95,39 @@ stages:
         pool:
           vmImage: 'windows-2019'
         steps:
-          - task: NuGetToolInstaller@1
-            displayName: 'Use NuGet 6.6.1'
-            enabled: ${{parameters.runCompletePipeline}}
-            inputs:
-              versionSpec: 6.6.1
-
-          - task: NuGetCommand@2
-            displayName: 'NuGet restore'
-            enabled: ${{parameters.runCompletePipeline}}
-            inputs:
+        - checkout: 
+        - task: NuGetToolInstaller@1
+          displayName: 'Use NuGet 6.6.1'
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            versionSpec: 6.6.1
+        
+        - task: NuGetCommand@2
+          displayName: 'NuGet restore'
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
               restoreSolution: WebAppWithDatabase.sln
 
-          - task: MSBuild@1
-            displayName: 'Build solution SeleniumUiTests/SeleniumUiTests.csproj'
-            enabled: ${{parameters.runCompletePipeline}}
-            inputs:
-              solution: SeleniumUiTests/SeleniumUiTests.csproj
-              msbuildArguments: '/p:OutDir=$(Build.ArtifactStagingDirectory)'
+        - task: MSBuild@1
+          displayName: 'Build solution SeleniumUiTests/SeleniumUiTests.csproj'
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            solution: SeleniumUiTests/SeleniumUiTests.csproj
+            msbuildArguments: '/p:OutDir=$(Build.ArtifactStagingDirectory)'
 
-          - task: DeleteFiles@1
-            displayName: 'Delete Old Chrome Driver'
-            enabled: ${{parameters.runCompletePipeline}}
-            inputs:
-              SourceFolder: '$(Build.ArtifactStagingDirectory)'
-              Contents: '*chrome*driver*'
+        - task: DeleteFiles@1
+          displayName: 'Delete Old Chrome Driver'
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            SourceFolder: '$(Build.ArtifactStagingDirectory)'
+            Contents: '*chrome*driver*'
 
-          - task: PublishBuildArtifacts@1
-            displayName: 'Publish Artifact: UI'
-            enabled: ${{parameters.runCompletePipeline}}
-            inputs:
-              ArtifactName: UI
+        - task: PublishBuildArtifacts@1
+          displayName: 'Publish Artifact: UI'
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            ArtifactName: UI
+          
 
       - job: 'Terraform'
         displayName: 'Copy Terraform .tf files and publish them'
@@ -132,19 +135,20 @@ stages:
         pool:
           vmImage: 'windows-2019'
         steps:
-          - task: CopyFiles@2
-            displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
-            enabled: ${{parameters.runCompletePipeline}}
-            inputs:
-              SourceFolder: TerraformFiles
-              Contents: '*.tf'
-              TargetFolder: '$(Build.ArtifactStagingDirectory)'
+        - checkout: none
+        - task: CopyFiles@2
+          displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            SourceFolder: TerraformFiles
+            Contents: '*.tf'
+            TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
-          - task: PublishBuildArtifacts@1
-            displayName: 'Publish Artifact: Terraform'
-            enabled: ${{parameters.runCompletePipeline}}
-            inputs:
-              ArtifactName: Terraform
+        - task: PublishBuildArtifacts@1
+          displayName: 'Publish Artifact: Terraform'
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            ArtifactName: Terraform
 
 
   - stage: 'Test_Env_Stage'
