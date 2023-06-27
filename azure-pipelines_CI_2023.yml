@@ -224,7 +224,7 @@ stages:
 
 
       - job: 'App_Service_Deployment'
-        dependsOn: Modify_Appsettings_File
+        dependsOn: Terraform
         displayName: 'Azure App Service Deploy: my-service-my-ado-demo-test'
         pool:
           vmImage: 'windows-2019'
