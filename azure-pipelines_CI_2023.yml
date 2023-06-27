@@ -222,32 +222,6 @@ stages:
             commandOptions: '-var admin_password=$(admin_password)'
             environmentServiceNameAzureRM: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
 
-      - job: 'Modify_Appsettings_File'
-        dependsOn: Terraform
-        displayName: 'Modify appsettings.json'
-        pool:
-          vmImage: 'windows-2019'
-
-        steps:
-        - checkout: none
-
-        - task: DownloadBuildArtifacts@1
-          inputs:
-            buildType: 'specific'
-            project: 'c3e77991-53e0-4a51-a181-ce6611863016'
-            pipeline: '13'
-            buildVersionToDownload: 'specific'
-            buildId: '62'
-            downloadType: 'single'
-            artifactName: 'WebApp'
-            downloadPath: '$(System.DefaultWorkingDirectory)'
-
-        - task: FileTransform@1
-          displayName: 'Modify Appsettings: SQL DB Connection'
-          inputs:
-            folderPath: '$(System.DefaultWorkingDirectory)/WebApp/WebApp.zip'
-            fileType: json
-            targetFiles: appsettings.json
 
       - job: 'App_Service_Deployment'
         dependsOn: Modify_Appsettings_File
@@ -268,6 +242,14 @@ stages:
             downloadType: 'single'
             artifactName: 'WebApp'
             downloadPath: '$(System.DefaultWorkingDirectory)'
+
+        - task: FileTransform@1
+          displayName: 'Modify Appsettings: SQL DB Connection String'
+          inputs:
+            folderPath: '$(System.DefaultWorkingDirectory)/WebApp/WebApp.zip'
+            fileType: json
+            targetFiles: appsettings.json
+
         - task: AzureRmWebAppDeployment@4
           displayName: 'Azure App Service Deploy: my-service-my-ado-demo-test'
           inputs:
