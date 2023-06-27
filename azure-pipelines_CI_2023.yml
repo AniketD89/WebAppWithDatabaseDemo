@@ -204,7 +204,7 @@ stages:
             commandOptions: '-var admin_password=$(admin_password)'
             environmentServiceNameAzureRM: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
 
-      - job: 'Modify Appsettings File'
+      - job: 'Modify_Appsettings_File'
         displayName: 'Modify appsettings.json'
         pool:
           vmImage: 'windows-2019'
@@ -217,7 +217,7 @@ stages:
             fileType: json
             targetFiles: appsettings.json
 
-      - job: 'App Service Deployment'
+      - job: 'App_Service_Deployment'
         displayName: 'Azure App Service Deploy: my-service-my-ado-demo-test'
         pool:
           vmImage: 'windows-2019'
@@ -232,7 +232,7 @@ stages:
             packageForLinux: '$(System.DefaultWorkingDirectory)/_Complete CI-CD Pipeline-ASP.NET Core-CI/WebApp/WebApp.zip'
             JSONFiles: '**/appsettings.json'
 
-      - job: 'DB Publish'
+      - job: 'DB_Publish'
         displayName: 'Azure SQL DacpacTask'
         pool:
           vmImage: 'windows-2019'
@@ -273,7 +273,7 @@ stages:
             
             Start-Sleep -Seconds 120
 
-      - job: 'Terraform Destroy'
+      - job: 'Terraform_Destroy'
         displayName: 'Destroy Created Resources'
         pool:
           vmImage: 'windows-2019'
