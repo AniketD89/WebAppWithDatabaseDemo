@@ -8,7 +8,7 @@ parameters:
 
 
 stages: 
-  - stage: 'Build Stage'
+  - stage: 'Build_Stage'
     displayName: 'Build Apps'
     jobs:
       - job: WebApp
@@ -147,7 +147,7 @@ stages:
               ArtifactName: Terraform
 
 
-  - stage: 'Test Env Stage'
+  - stage: 'Test_Env_Stage'
     dependsOn:
     - 'Build Stage'
     displayName: 'Deployment to Test Env'
