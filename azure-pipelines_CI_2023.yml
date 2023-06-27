@@ -1,123 +1,287 @@
 trigger: 'none'
 
+parameters:
+  - name: runCompletePipeline
+    displayName: Run All Tasks?
+    default: true
+    type: boolean
 
-jobs:
-- job: WebApp
-  displayName: 'Build WebApp'
-  pool:
-    vmImage: 'windows-2019'
-  variables:
-    BuildConfiguration: Release
 
-  steps:
-    - task: DotNetCoreCLI@2
-      displayName: Restore
-      inputs:
-        command: restore
-        projects: '**/WebApp.csproj'
+stages: 
+  - stage: 'Build Stage'
+    displayName: 'Build Apps'
+    jobs:
+      - job: WebApp
+        displayName: 'Build WebApp'
+        pool:
+          vmImage: 'windows-2019'
+        variables:
+          BuildConfiguration: Release
+
+        steps:
+        - task: DotNetCoreCLI@2
+          displayName: Restore
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            command: restore
+            projects: '**/WebApp.csproj'
+        
+        - task: PowerShell@2
+          displayName: 'PowerShell Script'
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            targetType: filePath
+            filePath: './sonar-add-project-guid.ps1'
+            workingDirectory: WebApp
+
+        - task: DotNetCoreCLI@2
+          displayName: Build
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            projects: '**/WebApp.csproj'
+            arguments: '--configuration $(BuildConfiguration)'
+
+        - task: DotNetCoreCLI@2
+          displayName: Test
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            command: test
+            projects: '**/WebApp*[Tt]est*.csproj'
+            arguments: '--configuration $(BuildConfiguration)'
+
+        - task: DotNetCoreCLI@2
+          displayName: Publish
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            command: publish
+            publishWebProjects: True
+            arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
+            zipAfterPublish: True
+
+        - task: PublishBuildArtifacts@1
+          displayName: 'Publish Artifact'
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            PathtoPublish: '$(build.artifactstagingdirectory)'
+            ArtifactName: WebApp
+
     
-    - task: PowerShell@2
-      displayName: 'PowerShell Script'
-      inputs:
-        targetType: filePath
-        filePath: './sonar-add-project-guid.ps1'
-        workingDirectory: WebApp
+      - job: Database
+        displayName: 'Build DB Project to generate .dacpac file'
+        dependsOn: WebApp
+        pool:
+          vmImage: 'windows-2019'
 
-    - task: DotNetCoreCLI@2
-      displayName: Build
-      inputs:
-        projects: '**/WebApp.csproj'
-        arguments: '--configuration $(BuildConfiguration)'
+        steps:
 
-    - task: DotNetCoreCLI@2
-      displayName: Test
-      inputs:
-        command: test
-        projects: '**/WebApp*[Tt]est*.csproj'
-        arguments: '--configuration $(BuildConfiguration)'
+        - task: MSBuild@1
+          displayName: 'Build solution WebApp.Database/WebApp.Database.sqlproj'
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            solution: WebApp.Database/WebApp.Database.sqlproj
+            msbuildArguments: '/p:OutDir=$(Build.ArtifactStagingDirectory)'
+            clean: true
 
-    - task: DotNetCoreCLI@2
-      displayName: Publish
-      inputs:
-        command: publish
-        publishWebProjects: True
-        arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
-        zipAfterPublish: True
+        - task: PublishBuildArtifacts@1
+          displayName: 'Publish Artifact: DB .dacpac File'
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            ArtifactName: DB
+      
+      - job: 'Selenium'
+        displayName: 'Build UI Tests'
+        dependsOn: Database
+        pool:
+          vmImage: 'windows-2019'
+        steps:
+          - task: NuGetToolInstaller@1
+            displayName: 'Use NuGet 6.6.1'
+            enabled: ${{parameters.runCompletePipeline}}
+            inputs:
+              versionSpec: 6.6.1
 
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact'
-      inputs:
-        PathtoPublish: '$(build.artifactstagingdirectory)'
-        ArtifactName: WebApp
-      condition: succeeded()
+          - task: NuGetCommand@2
+            displayName: 'NuGet restore'
+            enabled: ${{parameters.runCompletePipeline}}
+            inputs:
+              restoreSolution: WebAppWithDatabase.sln
 
-- job: Database
-  displayName: 'Build DB Project to generate .dacpac file'
-  dependsOn: WebApp
-  pool:
-    vmImage: 'windows-2019'
+          - task: MSBuild@1
+            displayName: 'Build solution SeleniumUiTests/SeleniumUiTests.csproj'
+            enabled: ${{parameters.runCompletePipeline}}
+            inputs:
+              solution: SeleniumUiTests/SeleniumUiTests.csproj
+              msbuildArguments: '/p:OutDir=$(Build.ArtifactStagingDirectory)'
 
-  steps:
+          - task: DeleteFiles@1
+            displayName: 'Delete Old Chrome Driver'
+            enabled: ${{parameters.runCompletePipeline}}
+            inputs:
+              SourceFolder: '$(Build.ArtifactStagingDirectory)'
+              Contents: '*chrome*driver*'
 
-    - task: MSBuild@1
-      displayName: 'Build solution WebApp.Database/WebApp.Database.sqlproj'
-      inputs:
-        solution: WebApp.Database/WebApp.Database.sqlproj
-        msbuildArguments: '/p:OutDir=$(Build.ArtifactStagingDirectory)'
-        clean: true
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Artifact: UI'
+            enabled: ${{parameters.runCompletePipeline}}
+            inputs:
+              ArtifactName: UI
 
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact: DB .dacpac File'
-      inputs:
-        ArtifactName: DB
-  
-- job: 'Selenium'
-  displayName: 'Build UI Tests'
-  dependsOn: Database
-  pool:
-    vmImage: 'windows-2019'
-  steps:
-    - task: NuGetToolInstaller@1
-      displayName: 'Use NuGet 6.6.1'
-      inputs:
-        versionSpec: 6.6.1
+      - job: 'Terraform'
+        displayName: 'Copy Terraform .tf files and publish them'
+        dependsOn: Selenium
+        pool:
+          vmImage: 'windows-2019'
+        steps:
+          - task: CopyFiles@2
+            displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
+            enabled: ${{parameters.runCompletePipeline}}
+            inputs:
+              SourceFolder: TerraformFiles
+              Contents: '*.tf'
+              TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
-    - task: NuGetCommand@2
-      displayName: 'NuGet restore'
-      inputs:
-        restoreSolution: WebAppWithDatabase.sln
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Artifact: Terraform'
+            enabled: ${{parameters.runCompletePipeline}}
+            inputs:
+              ArtifactName: Terraform
 
-    - task: MSBuild@1
-      displayName: 'Build solution SeleniumUiTests/SeleniumUiTests.csproj'
-      inputs:
-        solution: SeleniumUiTests/SeleniumUiTests.csproj
-        msbuildArguments: '/p:OutDir=$(Build.ArtifactStagingDirectory)'
 
-    - task: DeleteFiles@1
-      displayName: 'Delete Old Chrome Driver '
-      inputs:
-        SourceFolder: '$(Build.ArtifactStagingDirectory)'
-        Contents: '*chrome*driver*'
+  - stage: 'Test Env Stage'
+    dependsOn:
+    - 'Build Stage'
+    displayName: 'Deployment to Test Env'
+    jobs:
+      - job: 'Terraform'
+        displayName: 'Infra Deployment with TF'
+        pool:
+          vmImage: 'windows-2019'
 
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact: UI'
-      inputs:
-        ArtifactName: UI
+        steps:
+        - task: TerraformInstaller@1
+          displayName: 'Terraform Installation'
+          inputs:
+            terraformVersion: 'latest'
+          
+        - task: TerraformTaskV4@4
+          displayName: 'Terraform Init'
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/_Complete CI-CD Pipeline-ASP.NET Core-CI/Terraform'
+            backendServiceArm: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
+            backendAzureRmResourceGroupName: 'DevOpsDemoADO'
+            backendAzureRmStorageAccountName: 'myadodemostorageaccount'
+            backendAzureRmContainerName: 'statefile'
+            backendAzureRmKey: 'terraform.tfstate'
+          
+          
+        - task: TerraformTaskV4@4
+          displayName: 'Terraform Validate'
+          inputs:
+            command: validate
+            workingDirectory: '$(System.DefaultWorkingDirectory)/_Complete CI-CD Pipeline-ASP.NET Core-CI/Terraform'
 
-- job: 'Terraform'
-  displayName: 'Copy Terraform .tf files and publish them'
-  dependsOn: Selenium
-  pool:
-    vmImage: 'windows-2019'
-  steps:
-    - task: CopyFiles@2
-      displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
-      inputs:
-        SourceFolder: TerraformFiles
-        Contents: '*.tf'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+        - task: TerraformTaskV4@4
+          displayName: 'Terraform Plan'
+          inputs:
+            command: plan
+            workingDirectory: '$(System.DefaultWorkingDirectory)/_Complete CI-CD Pipeline-ASP.NET Core-CI/Terraform'
+            commandOptions: '-var admin_password=$(admin_password)'
+            environmentServiceNameAzureRM: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
+            backendServiceArm: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
+            backendAzureRmResourceGroupName: DevOpsDemoADO
+            backendAzureRmStorageAccountName: myadodemostorageaccount
+            backendAzureRmContainerName: statefile
+            backendAzureRmKey: terraform.tfstate
 
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact: Terraform'
-      inputs:
-        ArtifactName: Terraform
+
+        - task: TerraformTaskV4@4
+          displayName: 'Terraform Apply'
+          inputs:
+            command: apply
+            workingDirectory: '$(System.DefaultWorkingDirectory)/_Complete CI-CD Pipeline-ASP.NET Core-CI/Terraform'
+            commandOptions: '-var admin_password=$(admin_password)'
+            environmentServiceNameAzureRM: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
+
+      - job: 'Modify Appsettings File'
+        displayName: 'Modify appsettings.json'
+        pool:
+          vmImage: 'windows-2019'
+
+        steps:
+        - task: FileTransform@1
+          displayName: 'Modify Appsettings: SQL DB Connection'
+          inputs:
+            folderPath: '$(System.DefaultWorkingDirectory)/_Complete CI-CD Pipeline-ASP.NET Core-CI/WebApp/WebApp.zip'
+            fileType: json
+            targetFiles: appsettings.json
+
+      - job: 'App Service Deployment'
+        displayName: 'Azure App Service Deploy: my-service-my-ado-demo-test'
+        pool:
+          vmImage: 'windows-2019'
+
+        steps:
+        - task: AzureRmWebAppDeployment@4
+          displayName: 'Azure App Service Deploy: my-service-my-ado-demo-test'
+          inputs:
+            azureSubscription: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
+            appType: webAppLinux
+            WebAppName: 'my-service-my-ado-demo-test'
+            packageForLinux: '$(System.DefaultWorkingDirectory)/_Complete CI-CD Pipeline-ASP.NET Core-CI/WebApp/WebApp.zip'
+            JSONFiles: '**/appsettings.json'
+
+      - job: 'DB Publish'
+        displayName: 'Azure SQL DacpacTask'
+        pool:
+          vmImage: 'windows-2019'
+
+        steps:
+        - task: SqlAzureDacpacDeployment@1
+          displayName: 'Azure SQL DacpacTask'
+          inputs:
+            azureSubscription: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
+            AuthenticationType: connectionString
+            ConnectionString: 'Server=tcp:my-service-my-ado-demo-db-server-test.database.windows.net,1433;Initial Catalog=my-service-my-ado-demo-db-test;Persist Security Info=False;User ID=azureadmin;Password=$(admin_password);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+            DacpacFile: '$(System.DefaultWorkingDirectory)/_Complete CI-CD Pipeline-ASP.NET Core-CI/DB/WebApp.Database.dacpac'
+
+      - job: 'Selenium'
+        displayName: 'Run UI Tests'
+        pool:
+          vmImage: 'windows-2019'
+        steps:
+        - task: VSTest@2
+          inputs:
+            testSelector: 'testAssemblies'
+            testAssemblyVer2: |
+              $(System.DefaultWorkingDirectory)/_Complete CI-CD Pipeline-ASP.NET Core-CI/UI/*Test*.dll
+              !**\*TestAdapter.dll
+              !**\obj\**
+            searchFolder: '$(System.DefaultWorkingDirectory)'
+            runSettingsFile: '$(System.DefaultWorkingDirectory)/_Complete CI-CD Pipeline-ASP.NET Core-CI/UI/.runsettings'
+            overrideTestrunParameters: '-webAppUrl $(webappurl)'
+            codeCoverageEnabled: true
+      
+      - job: 'Sleep'
+        pool:
+          vmImage: 'windows-2019'
+        displayName: 'Sleep for 2mins'
+        steps:
+        - powershell: |
+            # Write your PowerShell commands here.
+            
+            Start-Sleep -Seconds 120
+
+      - job: 'Terraform Destroy'
+        displayName: 'Destroy Created Resources'
+        pool:
+          vmImage: 'windows-2019'
+        steps:
+        - task: TerraformTaskV4@4
+          inputs:
+            provider: 'azurerm'
+            command: 'destroy'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/_Complete CI-CD Pipeline-ASP.NET Core-CI/Terraform'
+            commandOptions: '-var admin_password=$(admin_password)'
+            environmentServiceNameAzureRM: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
