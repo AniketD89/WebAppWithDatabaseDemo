@@ -5,5 +5,6 @@
     [Email]		 NVARCHAR (50)  NULL, 
 	[Phone]		 NVARCHAR (50)  NULL, 
 	[Address]	 NVARCHAR (50)  NULL, 
+	[Country] NVARCHAR (MAX) NULL,
     CONSTRAINT [PK_Employee] PRIMARY KEY CLUSTERED ([Id] ASC)
 );
