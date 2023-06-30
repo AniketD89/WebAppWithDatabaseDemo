@@ -153,3 +153,11 @@ stages:
             # Write your PowerShell commands here.
             
             Start-Sleep -Seconds 120
+            
+        - task: TerraformTaskV4@4
+          displayName: 'Terraform Destroy'
+          inputs:
+            command: destroy
+            workingDirectory: '$(System.DefaultWorkingDirectory)/Terraform'
+            commandOptions: '-var admin_password=$(adminpassword)'
+            environmentServiceNameAzureRM: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'

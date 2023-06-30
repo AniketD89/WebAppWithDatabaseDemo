@@ -159,13 +159,15 @@ stages:
 
   - template: template-release_CD_2023.yaml
     parameters:
-    environment: ${{parameters.environment1}}
-    region: ${{parameters.region}}
-    admin_username: ${{parameters.admin_username}}
+      environment: ${{parameters.environment1}}
+      region: ${{parameters.region}}
+      admin_username: ${{parameters.admin_username}}
+      dependsOn: ['Build_Stage']
+    
 
-   - template: template-release_CD_2023.yaml
+  - template: template-release_CD_2023.yaml
     parameters:
-    environment: ${{parameters.environment2}}
-    region: ${{parameters.region}}
-    admin_username: ${{parameters.admin_username}}
-    dependsOn:['${{parameters.environment2}}']
+      environment: ${{parameters.environment2}}
+      region: ${{parameters.region}}
+      admin_username: ${{parameters.admin_username}}
+      dependsOn:['${{parameters.environment2}}']
