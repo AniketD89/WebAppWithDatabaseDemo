@@ -16,6 +16,13 @@ stages:
         steps:
           - checkout: none
 
+          - task: AzureKeyVault@2
+            inputs:
+              azureSubscription: "Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)"
+              KeyVaultName: "mydemo-ado-kv"
+              SecretsFilter: "*"
+              RunAsPreJob: true
+
           - task: DownloadBuildArtifacts@1
             inputs:
               buildType: "specific"
