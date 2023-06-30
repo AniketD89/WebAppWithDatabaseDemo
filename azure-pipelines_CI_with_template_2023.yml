@@ -158,7 +158,7 @@ stages:
           inputs:
             ArtifactName: Terraform
 
-  - template: template-release_CD_2023.yaml
+  - template: azure-pipelines_CD_2023.yaml
     parameters:
       environment: ${{variables.environment1}}
       region: ${{variables.region}}
