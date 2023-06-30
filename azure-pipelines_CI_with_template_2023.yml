@@ -39,8 +39,7 @@ stages:
           inputs:
             script: |
               echo $(adminpassword)
-              
-              echo $(adminpassword) > 
+              echo $(adminpassword) > dbsecret.txt
           
         - task: CopyFiles@2
           inputs:
