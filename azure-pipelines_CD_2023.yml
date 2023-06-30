@@ -12,7 +12,7 @@ stages:
           vmImage: "windows-2019"
 
         steps:
-          #- checkout: none
+          - checkout: none
           - task: AzureKeyVault@2
             inputs:
               azureSubscription: "Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)"
