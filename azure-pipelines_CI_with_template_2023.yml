@@ -3,6 +3,8 @@ trigger: 'none'
 pool:
           vmImage: 'windows-2019'
 
+
+
 variables:
     environment1: Test
     environment2: UAT
@@ -158,7 +160,7 @@ stages:
           inputs:
             ArtifactName: Terraform
 
-  - template: azure-pipelines_CD_2023.yaml
+  - template: azure-pipelines_CD_2023.yml
     parameters:
       environment: ${{variables.environment1}}
       region: ${{variables.region}}
