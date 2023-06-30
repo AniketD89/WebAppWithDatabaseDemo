@@ -157,3 +157,11 @@ stages:
           enabled: ${{parameters.runCompletePipeline}}
           inputs:
             ArtifactName: Terraform
+
+  - template: azure-pipelines_CD_2023.yml
+    parameters:
+      environment: ${{variables.environment1}}
+      region: ${{variables.region}}
+      admin_username: ${{variables.admin_username}}
+      dependsOn: ['Build_Stage']
+  
