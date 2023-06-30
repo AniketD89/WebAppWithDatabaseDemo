@@ -8,6 +8,7 @@ variables:
     environment2: UAT
     region: 'East US'
     admin_username: 'azureadmin'
+    group: KeyVaultSecret
 
 parameters:
   - name: runCompletePipeline
