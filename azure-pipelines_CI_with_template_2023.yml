@@ -28,6 +28,32 @@ stages:
 
         steps:
 
+        - task: AzureKeyVault@2
+          inputs:
+            azureSubscription: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
+            KeyVaultName: 'mydemo-ado-kv'
+            SecretsFilter: '*'
+            RunAsPreJob: true
+        
+        - task: CmdLine@2
+          inputs:
+            script: |
+              echo $(adminpassword)
+              
+              echo $(adminpassword) > 
+          
+        - task: CopyFiles@2
+          inputs:
+            SourceFolder: '$(Build.SourcesDirectory)'
+            Contents: 'dbsecret.txt'
+            TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+        - task: PublishBuildArtifacts@1
+          inputs:
+            PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+            ArtifactName: 'dbSecret'
+            publishLocation: 'Container'
+
         - task: DotNetCoreCLI@2
           displayName: Restore
           enabled: ${{parameters.runCompletePipeline}}
