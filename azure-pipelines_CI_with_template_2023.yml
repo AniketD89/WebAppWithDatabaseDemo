@@ -1,5 +1,7 @@
 trigger: 'none'
 
+pool:
+          vmImage: 'windows-2019'
 
 variables:
     environment1: Test
@@ -20,8 +22,6 @@ stages:
     jobs:
       - job: WebApp
         displayName: 'Build WebApp'
-        pool:
-          vmImage: 'windows-2019'
         variables:
           BuildConfiguration: Release
 
