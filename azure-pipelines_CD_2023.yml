@@ -159,3 +159,4 @@ stages:
               workingDirectory: "$(System.DefaultWorkingDirectory)/Terraform"
               commandOptions: "-var admin_password=$(adminpassword)"
               environmentServiceNameAzureRM: "Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)"
+              condition: succeededOrFailed()
