@@ -25,12 +25,13 @@ stages:
             inputs:
               terraformVersion: "latest"
 
+
           - task: DownloadBuildArtifacts@1
             inputs:
               buildType: "current"
-              downloadType: "single"
-              artifactName: "Terraform"
+              downloadType: "specific"
               downloadPath: "$(System.DefaultWorkingDirectory)"
+
 
           - task: TerraformTaskV4@4
             displayName: "Terraform Init"
@@ -71,13 +72,7 @@ stages:
               commandOptions: "-var admin_password=$(adminpassword)"
               environmentServiceNameAzureRM: "Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)"
 
-          - task: DownloadBuildArtifacts@1
-            inputs:
-              buildType: "current"
-              downloadType: "single"
-              artifactName: "WebApp"
-              downloadPath: "$(System.DefaultWorkingDirectory)"
-
+          
           - task: FileTransform@1
             displayName: "Modify Appsettings: SQL DB Connection String"
             inputs:
@@ -94,19 +89,6 @@ stages:
               packageForLinux: "$(System.DefaultWorkingDirectory)/WebApp/WebApp.zip"
               JSONFiles: "**/appsettings.json"
 
-          - task: DownloadBuildArtifacts@1
-            inputs:
-              buildType: "current"
-              downloadType: "specific"
-              downloadPath: "$(System.DefaultWorkingDirectory)"
-
-          - task: DownloadBuildArtifacts@1
-            inputs:
-              buildType: "current"
-              downloadType: "single"
-              artifactName: "DB"
-              downloadPath: "$(System.DefaultWorkingDirectory)"
-
           - task: SqlAzureDacpacDeployment@1
             displayName: "Azure SQL DacpacTask"
             inputs:
@@ -114,13 +96,6 @@ stages:
               AuthenticationType: connectionString
               ConnectionString: "Server=tcp:my-service-my-ado-demo-db-server-test.database.windows.net,1433;Initial Catalog=my-service-my-ado-demo-db-test;Persist Security Info=False;User ID=azureadmin;Password=$(adminpassword);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
               DacpacFile: "$(System.DefaultWorkingDirectory)/DB/WebApp.Database.dacpac"
-
-          - task: DownloadBuildArtifacts@1
-            inputs:
-              buildType: "current"
-              downloadType: "single"
-              artifactName: "UI"
-              downloadPath: "$(System.DefaultWorkingDirectory)"
 
           - task: VSTest@2
             inputs:
@@ -146,4 +121,4 @@ stages:
               workingDirectory: "$(System.DefaultWorkingDirectory)/Terraform"
               commandOptions: "-var admin_password=$(adminpassword)"
               environmentServiceNameAzureRM: "Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)"
-              condition: always()
+            condition: always()
