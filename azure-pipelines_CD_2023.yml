@@ -5,8 +5,6 @@ parameters:
 
 stages:
   - stage: ${{parameters.environment}}
-    dependsOn:
-      - "Build_Stage"
     displayName: "Deployment to ${{parameters.environment}} Env"
     jobs:
       - job: "Test_Env_Deployment"
