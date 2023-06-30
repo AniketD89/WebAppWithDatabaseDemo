@@ -1,0 +1,155 @@
+parameters:
+    environment: Test
+    region: 'East US'
+    admin_username: 'azureadmin'
+
+
+stages:
+
+  - stage: ${{parameters.environment}}
+    dependsOn:
+    - 'Build_Stage'
+    displayName: 'Deployment to ${{parameters.environment}} Env'
+    jobs:
+      - job: 'Infra and Full App Deployment'
+        pool:
+          vmImage: 'windows-2019'
+
+        steps:
+        - checkout: none
+
+        - task: DownloadBuildArtifacts@1
+          inputs:
+            buildType: 'specific'
+            project: 'c3e77991-53e0-4a51-a181-ce6611863016'
+            pipeline: '13'
+            buildVersionToDownload: 'specific'
+            buildId: '62'
+            downloadType: 'single'
+            artifactName: 'Terraform'
+            downloadPath: '$(System.DefaultWorkingDirectory)'
+
+
+        - task: TerraformInstaller@1
+          displayName: 'Terraform Installation'
+          inputs:
+            terraformVersion: 'latest'
+          
+        - task: TerraformTaskV4@4
+          displayName: 'Terraform Init'
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/Terraform'
+            backendServiceArm: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
+            backendAzureRmResourceGroupName: 'DevOpsDemoADO'
+            backendAzureRmStorageAccountName: 'myadodemostorageaccount'
+            backendAzureRmContainerName: 'statefile'
+            backendAzureRmKey: 'terraform.tfstate'
+          
+          
+        - task: TerraformTaskV4@4
+          displayName: 'Terraform Validate'
+          inputs:
+            command: validate
+            workingDirectory: '$(System.DefaultWorkingDirectory)/Terraform'
+
+        - task: TerraformTaskV4@4
+          displayName: 'Terraform Plan'
+          inputs:
+            command: plan
+            workingDirectory: '$(System.DefaultWorkingDirectory)/Terraform'
+            commandOptions: '-var admin_password=$(adminpassword)'
+            environmentServiceNameAzureRM: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
+            backendServiceArm: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
+            backendAzureRmResourceGroupName: DevOpsDemoADO
+            backendAzureRmStorageAccountName: myadodemostorageaccount
+            backendAzureRmContainerName: statefile
+            backendAzureRmKey: terraform.tfstate
+
+
+        - task: TerraformTaskV4@4
+          displayName: 'Terraform Apply'
+          inputs:
+            command: apply
+            workingDirectory: '$(System.DefaultWorkingDirectory)/Terraform'
+            commandOptions: '-var admin_password=$(adminpassword)'
+            environmentServiceNameAzureRM: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
+
+
+        - task: DownloadBuildArtifacts@1
+          inputs:
+            buildType: 'specific'
+            project: 'c3e77991-53e0-4a51-a181-ce6611863016'
+            pipeline: '13'
+            buildVersionToDownload: 'specific'
+            buildId: '62'
+            downloadType: 'single'
+            artifactName: 'WebApp'
+            downloadPath: '$(System.DefaultWorkingDirectory)'
+
+        - task: FileTransform@1
+          displayName: 'Modify Appsettings: SQL DB Connection String'
+          inputs:
+            folderPath: '$(System.DefaultWorkingDirectory)/WebApp/WebApp.zip'
+            fileType: json
+            targetFiles: appsettings.json
+
+        - task: AzureRmWebAppDeployment@4
+          displayName: 'Azure App Service Deploy: my-service-my-ado-demo-test'
+          inputs:
+            azureSubscription: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
+            appType: webAppLinux
+            WebAppName: 'my-service-my-ado-demo-test'
+            packageForLinux: '$(System.DefaultWorkingDirectory)/WebApp/WebApp.zip'
+            JSONFiles: '**/appsettings.json'
+
+
+        - task: DownloadBuildArtifacts@1
+          inputs:
+            buildType: 'specific'
+            project: 'c3e77991-53e0-4a51-a181-ce6611863016'
+            pipeline: '13'
+            buildVersionToDownload: 'specific'
+            buildId: '62'
+            downloadType: 'single'
+            artifactName: 'DB'
+            downloadPath: '$(System.DefaultWorkingDirectory)'
+
+        - task: SqlAzureDacpacDeployment@1
+          displayName: 'Azure SQL DacpacTask'
+          inputs:
+            azureSubscription: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
+            AuthenticationType: connectionString
+            ConnectionString: 'Server=tcp:my-service-my-ado-demo-db-server-test.database.windows.net,1433;Initial Catalog=my-service-my-ado-demo-db-test;Persist Security Info=False;User ID=azureadmin;Password=$(adminpassword);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+            DacpacFile: '$(System.DefaultWorkingDirectory)/DB/WebApp.Database.dacpac'
+
+
+        - task: DownloadBuildArtifacts@1
+          inputs:
+            buildType: 'specific'
+            project: 'c3e77991-53e0-4a51-a181-ce6611863016'
+            pipeline: '13'
+            buildVersionToDownload: 'specific'
+            buildId: '62'
+            downloadType: 'single'
+            artifactName: 'UI'
+            downloadPath: '$(System.DefaultWorkingDirectory)'
+
+
+        - task: VSTest@2
+          inputs:
+            testSelector: 'testAssemblies'
+            testAssemblyVer2: |
+              $(System.DefaultWorkingDirectory)/UI/*Test*.dll
+              !**\*TestAdapter.dll
+              !**\obj\**
+            searchFolder: '$(System.DefaultWorkingDirectory)'
+            runSettingsFile: '$(System.DefaultWorkingDirectory)/UI/.runsettings'
+            overrideTestrunParameters: '-webAppUrl $(webappurl)'
+            codeCoverageEnabled: true
+      
+        - powershell: |
+            # Write your PowerShell commands here.
+            
+            Start-Sleep -Seconds 120
