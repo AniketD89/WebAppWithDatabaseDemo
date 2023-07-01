@@ -15,7 +15,6 @@ steps:
     KeyVaultName: 'mydemo-ado-kv'
     SecretsFilter: '*'
     RunAsPreJob: false
-  enabled: false
 
 - script: |
    echo $(adminpassword)
