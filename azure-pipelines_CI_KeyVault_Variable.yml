@@ -8,6 +8,25 @@ variables:
     group: KeyVaultSecret
 
 steps:
+
+
+- task: AzureKeyVault@2
+  displayName: 'Azure Key Vault: asdaew23'
+  inputs:
+    azureSubscription: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
+    KeyVaultName: KeyVaultSecret
+  enabled: false
+
 - script: |
    echo $(adminpassword)
    echo $(adminpassword) > secrettest.txt
+
+
+- script: |
+   echo $(adminpassword)
+   echo $(adminpassword) > secrettest1.txt
+
+
+- script: |
+   echo $(adminpassword)
+   echo $(adminpassword) > secrettest2.txt
