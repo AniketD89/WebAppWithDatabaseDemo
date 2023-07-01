@@ -19,7 +19,7 @@ steps:
     azureSubscription: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
     KeyVaultName: 'mydemo-ado-kv'
     SecretsFilter: '*'
-    RunAsPreJob: true
+    RunAsPreJob: false
 
 
 - script: |
