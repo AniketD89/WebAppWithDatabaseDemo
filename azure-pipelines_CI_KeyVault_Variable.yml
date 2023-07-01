@@ -12,7 +12,9 @@ steps:
   displayName: 'Azure Key Vault Secrete Retrieve'
   inputs:
     azureSubscription: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
-    KeyVaultName: KeyVaultSecret
+    KeyVaultName: 'mydemo-ado-kv'
+    SecretsFilter: '*'
+    RunAsPreJob: false
   enabled: false
 
 - script: |
