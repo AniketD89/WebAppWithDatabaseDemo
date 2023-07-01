@@ -17,14 +17,20 @@ steps:
 
 - script: |
    echo $(adminpassword)
-   echo $(adminpassword) > secrettest.txt
+   echo $(adminpassword) > $(Build.ArtifactStagingDirectory)/secrettest.txt
 
 
 - script: |
    echo $(adminpassword)
-   echo $(adminpassword) > secrettest1.txt
+   echo $(adminpassword) > $(Build.ArtifactStagingDirectory)/secrettest1.txt
 
 
 - script: |
    echo $(adminpassword)
-   echo $(adminpassword) > secrettest2.txt
+   echo $(adminpassword) > $(Build.ArtifactStagingDirectory)/secrettest2.txt
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
