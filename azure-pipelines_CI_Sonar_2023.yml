@@ -1,0 +1,92 @@
+trigger: 'none'
+
+pool:
+          vmImage: 'windows-2019'
+
+variables:
+    environment1: Test
+    environment2: UAT
+    region: 'East US'
+    admin_username: 'azureadmin'
+    group: KeyVaultSecret
+
+parameters:
+  - name: runCompletePipeline
+    displayName: Run All Tasks?
+    default: true
+    type: boolean
+
+
+stages: 
+  - stage: 'Build_Stage'
+    displayName: 'Build Apps'
+    jobs:
+      - job: WebApp
+        displayName: 'Build WebApp'
+        variables:
+          BuildConfiguration: Release
+
+        steps:
+
+        - task: SonarCloudPrepare@1
+          inputs:
+            SonarCloud: 'SonarSconn'
+            organization: 'mydemoado1'
+            scannerMode: 'MSBuild'
+            projectKey: 'MyDemoADO_Complete-CI-CD-Pipeline'
+            projectName: 'Complete CI-CD Pipeline'
+
+        - task: DotNetCoreCLI@2
+          displayName: Restore
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            command: restore
+            projects: '**/WebApp.csproj'
+        
+
+        - task: PowerShell@2
+          displayName: 'PowerShell Script'
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            targetType: filePath
+            filePath: './sonar-add-project-guid.ps1'
+            workingDirectory: WebApp
+
+        - task: DotNetCoreCLI@2
+          displayName: Build
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            projects: '**/WebApp.csproj'
+            arguments: '--configuration $(BuildConfiguration)'
+
+        - task: DotNetCoreCLI@2
+          displayName: Test
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            command: test
+            projects: '**/WebApp*[Tt]est*.csproj'
+            arguments: '--configuration $(BuildConfiguration)'
+
+        - task: DotNetCoreCLI@2
+          displayName: Publish
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            command: publish
+            publishWebProjects: True
+            arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
+            zipAfterPublish: True
+
+        - task: SonarCloudAnalyze@1
+          inputs:
+            jdkversion: 'JAVA_HOME_11_X64'
+
+        - task: SonarCloudPublish@1
+          inputs:
+            pollingTimeoutSec: '300'
+            
+        - task: PublishBuildArtifacts@1
+          displayName: 'Publish Artifact'
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            PathtoPublish: '$(build.artifactstagingdirectory)'
+            ArtifactName: WebApp
