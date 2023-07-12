@@ -42,11 +42,13 @@ stages:
 
       - job: "Echo"
         dependsOn: Deployment
+        pool:
+           vmImage: ubuntu-20.04
         steps:
           - checkout: none
           - task: CmdLine@2
+            continueOnError: true
             inputs:
               script: |
                 echo $(webappurl)
                 echo $(ConnectionString)
-          
