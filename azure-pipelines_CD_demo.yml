@@ -107,7 +107,7 @@ stages:
             inputs:
               azureSubscription: "Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)"
               appType: webAppLinux
-              WebAppName: "my-service-my-ado-demo-test"
+              WebAppName: "my-service-my-ado-demo-$(env)"
               packageForLinux: "$(System.DefaultWorkingDirectory)/WebApp/WebApp.zip"
               JSONFiles: "**/appsettings.json"
 
