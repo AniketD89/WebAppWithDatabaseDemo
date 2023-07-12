@@ -10,6 +10,7 @@ variables:
     region2: 'eastus2'
     admin_username: 'azureadmin'
     ConnectionString: 'Server=tcp:my-service-my-ado-demo-db-server-$(env).database.windows.net,1433;Initial Catalog=my-service-my-ado-demo-db-$(env);Persist Security Info=False;User ID=azureadmin;Password=$(adminpassword);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+    ConnectionStrings.WebAppContext: 'Data Source=tcp:my-service-my-ado-demo-db-server-$(env).database.windows.net,1433;Initial Catalog=my-service-my-ado-demo-db-$(env);Persist Security Info=False;User ID=azureadmin;Password=$(admin_password);'    
     webappname: 'my-service-my-ado-demo'
     webappurl: 'https://$(webappname)-$(env).azurewebsites.net/'
 
