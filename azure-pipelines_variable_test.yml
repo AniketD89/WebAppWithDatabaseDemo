@@ -43,7 +43,7 @@ stages:
       - job: "Echo"
         dependsOn: Deployment
         steps:
-          
+          - checkout: none
           - task: CmdLine@2
             inputs:
               script: |
