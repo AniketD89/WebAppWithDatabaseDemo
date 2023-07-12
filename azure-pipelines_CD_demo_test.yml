@@ -3,12 +3,11 @@ parameters:
   region: "West US"
   admin_username: "azureadmin1"
 
-variables: 
-  env: ${{lower(parameters.environment)}}
-  
 
 stages:
   - stage: ${{parameters.environment}}
+    variables: 
+      env: ${{lower(parameters.environment)}}
     displayName: "Deployment to ${{parameters.environment}} Env"
     jobs:
 
