@@ -35,3 +35,9 @@ stages:
               notifyUsers: 'aniket.p.deshmukh@gmail.com'
               instructions: 'Please validate the build $(Build.BuildId) configuration and resume'
               onTimeout: 'resume'
+
+          - task: CmdLine@2
+            inputs:
+              script: |
+                echo $(webappurl)
+                echo $(ConnectionString)
