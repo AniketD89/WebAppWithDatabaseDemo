@@ -4,11 +4,11 @@ pool:
           vmImage: 'windows-2019'
 
 variables:
-    environment1: Dev
-    environment2: Prod
-    region1: 'East US'
-    region2: 'East US2'
-    admin_username: 'azureadmin'
+  environment1: Dev
+  environment2: Prod
+  region1: 'East US'
+  region2: 'East US2'
+  admin_username: 'azureadmin'
 
 stages:
   - stage: 'Build_Stage'
