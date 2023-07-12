@@ -13,5 +13,6 @@ variables:
     environment2: Prod
 
 steps:
+- checkout: none
 - script: echo $(webappurl)
   displayName: 'Run a one-line script'
