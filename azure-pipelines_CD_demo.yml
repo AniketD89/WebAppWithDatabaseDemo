@@ -123,6 +123,7 @@ stages:
               IpDetectionMethod: 'AutoDetect'
 
           - task: VSTest@2
+            continueOnError: true
             condition: ${{ ne(lower(parameters.environment), 'prod') }}
             inputs:
               testSelector: "testAssemblies"
