@@ -10,8 +10,8 @@ steps:
 - checkout: none
 
 - script: |
-   echo $(adminpassword)
-   echo $(adminpassword) > $(Build.ArtifactStagingDirectory)/secrettest.txt
+   echo $(mysecret)
+   echo $(mysecret) > $(Build.ArtifactStagingDirectory)/secrettest.txt
 
 - task: AzureKeyVault@2
   displayName: 'Azure Key Vault Secrete Retrieve'
@@ -23,13 +23,13 @@ steps:
 
 
 - script: |
-   echo $(adminpassword)
-   echo $(adminpassword) > $(Build.ArtifactStagingDirectory)/secrettest1.txt
+   echo $(mysecret)
+   echo $(mysecret) > $(Build.ArtifactStagingDirectory)/secrettest1.txt
 
 
 - script: |
-   echo $(adminpassword)
-   echo $(adminpassword) > $(Build.ArtifactStagingDirectory)/secrettest2.txt
+   echo $(mysecret)
+   echo $(mysecret) > $(Build.ArtifactStagingDirectory)/secrettest2.txt
 
 - task: PublishBuildArtifacts@1
   inputs:
