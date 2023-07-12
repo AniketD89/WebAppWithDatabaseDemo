@@ -9,11 +9,14 @@ variables:
     region1: 'East US'
     region2: 'East US2'
     admin_username: 'azureadmin'
+    ConnectionString: 'Server=tcp:my-service-my-ado-demo-db-server-$(env).database.windows.net,1433;Initial Catalog=my-service-my-ado-demo-db-${{lower(parameters.environment)}};Persist Security Info=False;User ID=azureadmin;Password=$(adminpassword);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+    webappname: 'my-service-my-ado-demo'
+    webappurl: 'https://$(webappname)-$(env).azurewebsites.net/'
 
 parameters:
   - name: runCompletePipeline
     displayName: Run All Tasks?
-    default: true
+    default: false
     type: boolean
 
 
