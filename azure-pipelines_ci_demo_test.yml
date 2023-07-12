@@ -1,0 +1,40 @@
+trigger: 'none'
+
+pool:
+          vmImage: 'windows-2019'
+
+variables:
+    environment1: Dev
+    environment2: Prod
+    region1: 'East US'
+    region2: 'East US2'
+    admin_username: 'azureadmin'
+
+stages:
+  - stage: 'Build_Stage'
+    displayName: 'Build Apps'
+    jobs:
+      - job: WebApp
+        displayName: 'Build WebApp'
+        variables:
+          BuildConfiguration: Release
+
+        steps:
+        
+        - task: CmdLine@2
+          inputs:
+            script: 'echo Hello world'
+
+  - template: azure-pipelines_CD_demo_test.yml
+    parameters:
+      environment: ${{variables.environment1}}
+      region: ${{variables.region1}}
+      admin_username: ${{variables.admin_username}}
+      dependsOn: ['Build_Stage']
+
+  - template: azure-pipelines_CD_demo_test.yml
+    parameters:
+      environment: ${{variables.environment2}}
+      region: ${{variables.region2}}
+      admin_username: ${{variables.admin_username}}
+      dependsOn: ['Echo']
