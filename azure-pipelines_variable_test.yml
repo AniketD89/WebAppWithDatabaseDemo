@@ -11,10 +11,10 @@ pool:
 parameters:
  - name: environment
    values:
-     - uat
-     - dev
-     - test
-     - prod
+     - UAT
+     - DEV
+     - Test
+     - PrOD
 
 stages:
   - stage: ${{parameters.environment}}
