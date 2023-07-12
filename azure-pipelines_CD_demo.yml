@@ -11,7 +11,7 @@ stages:
     displayName: "Deployment to ${{parameters.environment}} Env"
     jobs:
 
-      - job: "Prod Deployment Approval"
+      - job: "Approval"
         pool: server
 
         steps:
@@ -27,7 +27,7 @@ stages:
 
     
       - job: "Deployment"
-        dependsOn: "Prod Deployment Approval"
+        dependsOn: "Approval"
         pool:
           vmImage: "windows-2019"
 
