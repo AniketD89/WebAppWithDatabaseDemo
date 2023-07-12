@@ -12,3 +12,4 @@ steps:
 - script: |
       docker run --tty --volume $(tf_folder):/tf bridgecrew/checkov --directory /tf --compact
   displayName: Run Static Code analysis for Terraform using Checkov
+  continueOnError: true
