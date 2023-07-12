@@ -37,6 +37,7 @@ stages:
               onTimeout: 'resume'
 
       - job: "Echo"
+        dependsOn: Deployment
         steps:
           
           - task: CmdLine@2
