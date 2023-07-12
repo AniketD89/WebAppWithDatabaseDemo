@@ -34,15 +34,6 @@ stages:
         steps:
           - checkout: none
 
-          - task: ManualValidation@0
-            condition: ${{ eq(lower(parameters.environment), 'prod') }}
-            timeoutInMinutes: 60
-            displayName: "Prod Deployment Validation"
-            inputs:
-              notifyUsers: 'aniket.p.deshmukh@gmail.com'
-              instructions: 'Please validate the build $(Build.BuildId) configuration and resume'
-              onTimeout: 'resume'
-
           - task: AzureKeyVault@2
             displayName: "Retrieve DB Login Secret"
             inputs:
