@@ -3,17 +3,32 @@ parameters:
   region: "West US"
   admin_username: "azureadmin1"
 
+
 stages:
   - stage: ${{parameters.environment}}
+    variables: 
+      env: ${{lower(parameters.environment)}}
     displayName: "Deployment to ${{parameters.environment}} Env"
     jobs:
+
       - job: "Deployment"
         pool:
           vmImage: "windows-2019"
 
         steps:
           - checkout: none
+
+          - task: ManualValidation@0
+            condition: ${{ eq(lower(parameters.environment), 'prod') }}
+            timeoutInMinutes: 60
+            displayName: "Prod Deployment Validation"
+            inputs:
+              notifyUsers: 'aniket.p.deshmukh@gmail.com'
+              instructions: 'Please validate the build $(Build.BuildId) configuration and resume'
+              onTimeout: 'resume'
+
           - task: AzureKeyVault@2
+            displayName: "Retrieve DB Login Secret"
             inputs:
               azureSubscription: "Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)"
               KeyVaultName: "mydemo-ado-kv"
@@ -92,12 +107,16 @@ stages:
           - task: SqlAzureDacpacDeployment@1
             displayName: "Azure SQL DacpacTask"
             inputs:
-              azureSubscription: "Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)"
-              AuthenticationType: connectionString
-              ConnectionString: "Server=tcp:my-service-my-ado-demo-db-server-test.database.windows.net,1433;Initial Catalog=my-service-my-ado-demo-db-test;Persist Security Info=False;User ID=azureadmin;Password=$(adminpassword);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
-              DacpacFile: "$(System.DefaultWorkingDirectory)/DB/WebApp.Database.dacpac"
+              azureSubscription: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
+              AuthenticationType: 'connectionString'
+              ConnectionString: 'Server=tcp:my-service-my-ado-demo-db-server-$(env).database.windows.net,1433;Initial Catalog=my-service-my-ado-demo-db-$(env);Persist Security Info=False;User ID=azureadmin;Password=$(adminpassword);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+              deployType: 'DacpacTask'
+              DeploymentAction: 'Publish'
+              DacpacFile: '$(System.DefaultWorkingDirectory)/DB/WebApp.Database.dacpac'
+              IpDetectionMethod: 'AutoDetect'
 
           - task: VSTest@2
+            condition: ${{ ne(lower(parameters.environment), 'prod') }}
             inputs:
               testSelector: "testAssemblies"
               testAssemblyVer2: |
