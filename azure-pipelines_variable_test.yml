@@ -1,0 +1,17 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger: 'none'
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+    environment1: Dev
+    environment2: Prod
+
+steps:
+- script: echo $(webappurl)
+  displayName: 'Run a one-line script'
