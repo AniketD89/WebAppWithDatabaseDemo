@@ -8,11 +8,28 @@ trigger: 'none'
 pool:
   vmImage: ubuntu-latest
 
-variables:
-    environment1: Dev
-    environment2: Prod
+parameters:
+ - name: environment
+   values:
+     - uat
 
-steps:
-- checkout: none
-- script: echo $(webappurl)
-  displayName: 'Run a one-line script'
+stages:
+  - stage: ${{parameters.environment}}
+    displayName: "Deployment to ${{parameters.environment}} Env"
+    jobs:
+
+      - job: "Deployment"
+        pool:
+          vmImage: "windows-2019"
+
+        steps:
+          - checkout: none
+
+          - task: ManualValidation@0
+            condition: ${{ eq(lower(parameters.environment), 'prod') }}
+            timeoutInMinutes: 60
+            displayName: "Prod Deployment Validation"
+            inputs:
+              notifyUsers: 'aniket.p.deshmukh@gmail.com'
+              instructions: 'Please validate the build $(Build.BuildId) configuration and resume'
+              onTimeout: 'resume'
