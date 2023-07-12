@@ -19,8 +19,7 @@ stages:
     jobs:
 
       - job: "Deployment"
-        pool:
-          vmImage: "windows-2019"
+        pool: server
 
         steps:
           - checkout: none
