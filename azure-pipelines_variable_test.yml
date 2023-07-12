@@ -36,6 +36,9 @@ stages:
               instructions: 'Please validate the build $(Build.BuildId) configuration and resume'
               onTimeout: 'resume'
 
+      - job: "Echo"
+        steps:
+          
           - task: CmdLine@2
             inputs:
               script: |
