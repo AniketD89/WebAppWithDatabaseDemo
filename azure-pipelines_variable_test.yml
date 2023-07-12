@@ -16,6 +16,10 @@ parameters:
      - Test
      - PrOD
 
+variables: 
+  env: ${{lower(parameters.environment)}}
+  
+
 stages:
   - stage: ${{parameters.environment}}
     displayName: "Deployment to ${{parameters.environment}} Env"
@@ -45,3 +49,4 @@ stages:
               script: |
                 echo $(webappurl)
                 echo $(ConnectionString)
+          
