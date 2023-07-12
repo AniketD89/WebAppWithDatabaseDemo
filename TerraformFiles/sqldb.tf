@@ -1,8 +1,8 @@
 
 resource "azurerm_mssql_server" "server" {
   name                         = "my-service-my-ado-demo-db-server-${lower(var.environment)}"
-  resource_group_name          = data.azurerm_resource_group.example.name
-  location                     = data.azurerm_resource_group.example.location
+  resource_group_name          = azurerm_resource_group.rg.name
+  location                     = azurerm_resource_group.rg.location
   administrator_login          = var.admin_username
   administrator_login_password = var.admin_password
   version                      = "12.0"

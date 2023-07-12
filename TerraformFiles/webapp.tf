@@ -1,9 +1,9 @@
 resource "azurerm_service_plan" "example" {
   name                = "my-appserviceplan-my-ado-demo-${lower(var.environment)}"
-  resource_group_name = data.azurerm_resource_group.example.name
-  location            = data.azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
   os_type             = "Linux"
-  sku_name            = "F1"
+  sku_name            = "B1"
   depends_on          = [azurerm_mssql_database.db]
 }
 
@@ -13,10 +13,10 @@ resource "azurerm_service_plan" "example" {
 
 resource "azurerm_linux_web_app" "example" {
   name                = "my-service-my-ado-demo-${lower(var.environment)}"
-  resource_group_name = data.azurerm_resource_group.example.name
+  resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_service_plan.example.location
   service_plan_id     = azurerm_service_plan.example.id
-  
+
 
   connection_string {
     name  = "Database"
