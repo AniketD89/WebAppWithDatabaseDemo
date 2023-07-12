@@ -12,6 +12,9 @@ parameters:
  - name: environment
    values:
      - uat
+     - dev
+     - test
+     - prod
 
 stages:
   - stage: ${{parameters.environment}}
@@ -25,7 +28,7 @@ stages:
           
 
           - task: ManualValidation@0
-            condition: ${{ eq(lower(parameters.environment), 'uat') }}
+            condition: ${{ eq(lower(parameters.environment), 'prod') }}
             timeoutInMinutes: 60
             displayName: "Prod Deployment Validation"
             inputs:
