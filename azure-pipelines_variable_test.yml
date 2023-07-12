@@ -26,7 +26,7 @@ stages:
           - checkout: none
 
           - task: ManualValidation@0
-            condition: ${{ eq(lower(parameters.environment), 'prod') }}
+            condition: ${{ eq(lower(parameters.environment), 'uat') }}
             timeoutInMinutes: 60
             displayName: "Prod Deployment Validation"
             inputs:
