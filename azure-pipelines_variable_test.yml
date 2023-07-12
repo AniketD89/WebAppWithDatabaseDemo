@@ -22,7 +22,7 @@ stages:
         pool: server
 
         steps:
-          - checkout: none
+          
 
           - task: ManualValidation@0
             condition: ${{ eq(lower(parameters.environment), 'uat') }}
