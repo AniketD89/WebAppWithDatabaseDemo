@@ -124,7 +124,7 @@ stages:
 
           - task: VSTest@2
             continueOnError: true
-            condition: ${{ ne(lower(parameters.environment), 'prod') }}
+            condition: ${{ eq(lower(parameters.environment), 'dev') }}
             inputs:
               testSelector: "testAssemblies"
               testAssemblyVer2: |
