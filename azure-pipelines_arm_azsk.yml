@@ -17,3 +17,35 @@ steps:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
     publishLocation: 'Container'
+
+
+
+
+- task: AzSKARMTemplateChecker@4
+  inputs:
+    ARMTemplateFilePath: '$(Build.ArtifactStagingDirectory)'
+    ARMTemplateParameterFilePath: '$(Build.ArtifactStagingDirectory)'
+
+
+
+- task: AzureResourceManagerTemplateDeployment@3
+  inputs:
+    deploymentScope: 'Resource Group'
+    azureResourceManagerConnection: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
+    subscriptionId: '36e5119a-ef0e-4643-a46a-4a137216c264'
+    action: 'Create Or Update Resource Group'
+    resourceGroupName: 'DemoRG'
+    location: 'East US'
+    templateLocation: 'Linked artifact'
+    csmFile: '$(Build.ArtifactStagingDirectory)'
+    csmParametersFile: '$(Build.ArtifactStagingDirectory)'
+    deploymentMode: 'Incremental'
+
+
+- task: AzSKSVTs@4
+  inputs:
+    ConnectedServiceNameARM: 'Pay-As-You-Go (36e5119a-ef0e-4643-a46a-4a137216c264)'
+    GenerateMethodParameterSetSelection: 'ResourceGroupName'
+    ResourceGroupName: 'DemoRG'
+    SubscriptionId: '36e5119a-ef0e-4643-a46a-4a137216c264'
+    EnableGSSscan: true
