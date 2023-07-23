@@ -22,6 +22,7 @@ steps:
 
 
 - task: AzSKARMTemplateChecker@4
+  condition: true
   inputs:
     ARMTemplateFilePath: '$(Build.ArtifactStagingDirectory)'
     ARMTemplateParameterFilePath: '$(Build.ArtifactStagingDirectory)'
