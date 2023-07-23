@@ -1,0 +1,19 @@
+trigger: none
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: 'AzureResourceGroupDeployment'
+    Contents: '**'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
