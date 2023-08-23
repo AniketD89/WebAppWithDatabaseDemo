@@ -15,9 +15,9 @@ pool:
   #name: Default
   vmImage: 'ubuntu-20.04'
 
-container:
-  image: aniketd89/dotnetcorebuildagent:v1
-  endpoint: private_dockerhub_connection
+  container:
+    image: aniketd89/dotnetcorebuildagent:v1
+    endpoint: private_dockerhub_connection
 
 stages: 
   - stage: 'Build_Stage'
