@@ -5,8 +5,70 @@
 
 trigger: none
 
+parameters:
+  - name: runCompletePipeline
+    displayName: Run All Tasks?
+    default: true
+    type: boolean
+
 pool:
   name: Default
 
-steps:
-- script: printenv
+stages: 
+  - stage: 'Build_Stage'
+    displayName: 'Build Apps'
+    jobs:
+      - job: WebApp
+        displayName: 'Build WebApp'
+        pool:
+          vmImage: 'windows-2019'
+        variables:
+          BuildConfiguration: Release
+
+        steps:
+        - checkout: none
+        - task: DotNetCoreCLI@2
+          displayName: Restore
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            command: restore
+            projects: '**/WebApp.csproj'
+        
+        - task: PowerShell@2
+          displayName: 'PowerShell Script'
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            targetType: filePath
+            filePath: './sonar-add-project-guid.ps1'
+            workingDirectory: WebApp
+
+        - task: DotNetCoreCLI@2
+          displayName: Build
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            projects: '**/WebApp.csproj'
+            arguments: '--configuration $(BuildConfiguration)'
+
+        - task: DotNetCoreCLI@2
+          displayName: Test
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            command: test
+            projects: '**/WebApp*[Tt]est*.csproj'
+            arguments: '--configuration $(BuildConfiguration)'
+
+        - task: DotNetCoreCLI@2
+          displayName: Publish
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            command: publish
+            publishWebProjects: True
+            arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
+            zipAfterPublish: True
+
+        - task: PublishBuildArtifacts@1
+          displayName: 'Publish Artifact'
+          enabled: ${{parameters.runCompletePipeline}}
+          inputs:
+            PathtoPublish: '$(build.artifactstagingdirectory)'
+            ArtifactName: WebApp
