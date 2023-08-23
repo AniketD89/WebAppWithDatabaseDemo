@@ -1,0 +1,62 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger: none
+
+parameters:
+  - name: runCompletePipeline
+    displayName: Run All Tasks?
+    default: true
+    type: boolean
+
+pool:
+  #name: Default
+  vmImage: 'ubuntu-20.04'
+
+container:
+    image: aniketd89/dotnetcorebuildagent:v1
+    endpoint: private_dockerhub_connection
+
+
+steps:
+
+- task: DotNetCoreCLI@2
+  displayName: Restore
+  enabled: ${{parameters.runCompletePipeline}}
+  inputs:
+    command: restore
+    projects: '**/WebApp.csproj'
+
+
+- task: DotNetCoreCLI@2
+  displayName: Build
+  enabled: ${{parameters.runCompletePipeline}}
+  inputs:
+    projects: '**/WebApp.csproj'
+    arguments: '--configuration $(BuildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  displayName: Test
+  enabled: ${{parameters.runCompletePipeline}}
+  inputs:
+    command: test
+    projects: '**/WebApp*[Tt]est*.csproj'
+    arguments: '--configuration $(BuildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  displayName: Publish
+  enabled: ${{parameters.runCompletePipeline}}
+  inputs:
+    command: publish
+    publishWebProjects: True
+    arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
+    zipAfterPublish: True
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact'
+  enabled: ${{parameters.runCompletePipeline}}
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+    ArtifactName: WebApp
