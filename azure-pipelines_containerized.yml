@@ -32,13 +32,6 @@ stages:
             command: restore
             projects: '**/WebApp.csproj'
         
-        - task: PowerShell@2
-          displayName: 'PowerShell Script'
-          enabled: ${{parameters.runCompletePipeline}}
-          inputs:
-            targetType: filePath
-            filePath: './sonar-add-project-guid.ps1'
-            workingDirectory: WebApp
 
         - task: DotNetCoreCLI@2
           displayName: Build
