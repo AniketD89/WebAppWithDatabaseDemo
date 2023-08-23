@@ -17,7 +17,7 @@ pool:
 
 container:
     image: aniketd89/dotnetcorebuildagent:v1
-    endpoint: private_dockerhub_connection
+    endpoint: dockerhub_connection
 
 
 steps:
