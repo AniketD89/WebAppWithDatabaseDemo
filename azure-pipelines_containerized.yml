@@ -8,7 +8,5 @@ trigger: none
 pool:
   name: Default
 
-container: aniketd89/dotnetcorebuildagent
-
 steps:
 - script: printenv
