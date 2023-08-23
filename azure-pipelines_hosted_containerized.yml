@@ -13,7 +13,7 @@ parameters:
 
 pool:
   #name: Default
-  vmImage: 'ubuntu-20.04'
+  vmImage: 'windows-2019'
 
 container:
     image: aniketd89/dotnetcorebuildagent:v1
